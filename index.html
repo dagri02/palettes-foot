@@ -141,4 +141,131 @@
                 <option value="aucun">Aucun / Non renseigné</option>
                 <option value="attaquant">Attaquant (Appels, Finition, Jeu dos au but)</option>
                 <option value="milieu">Milieu (Vision, Orientation, Volume de course)</option>
-                <option value="defenseur">Défense
+                <option value="defenseur">Défenseur (Duel, Anticipation, Relance)</option>
+                <option value="gardien">Gardien (Réflexes, Placement, Jeu au pied)</option>
+            </select>
+        </div>
+        <div id="poste_note_div" class="form-group" style="display:none;">
+            <label id="poste_label">Note spécifique au poste :</label>
+            <select id="poste_note"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select>
+        </div>
+
+        <button onclick="genererRapport()">🎯 ENVOYER & ANALYSER</button>
+    </div>
+
+    <div id="results" class="card">
+        <h1 id="result_title">📈 Bilan</h1>
+        <div class="subtitle" id="result_meta"></div>
+        
+        <div style="max-width: 100%; margin: auto;">
+            <canvas id="chartRadar"></canvas>
+        </div>
+        
+        <h2>✍ Tangible : Commentaire Analytique</h2>
+        <div id="commentaire-texte" class="commentary"></div>
+        
+        <button onclick="revenirSaisie()" style="background:#1e3d59; margin-top:20px;">Faire une nouvelle saisie</button>
+    </div>
+
+    <script>
+        let monGraphique;
+
+        function changerPoste() {
+            const p = document.getElementById('poste_type').value;
+            const div = document.getElementById('poste_note_div');
+            const lbl = document.getElementById('poste_label');
+            if(p === 'aucun') { div.style.display = 'none'; } 
+            else {
+                div.style.display = 'flex';
+                if(p==='attaquant') lbl.innerText = "Attaquant (Appels, finition, jeu dos au but)";
+                if(p==='milieu') lbl.innerText = "Milieu (Vision, orientation du jeu, volume de course)";
+                if(p==='defenseur') lbl.innerText = "Défenseur (Duel, anticipation, relance)";
+                if(p==='gardien') lbl.innerText = "Gardien (Réflexes, placement, jeu au pied)";
+            }
+        }
+
+        function formaterDate(dateStr) {
+            if(!dateStr) return '';
+            const d = dateStr.split('-');
+            return `${d[2]}/${d[1]}/${d[0]}`;
+        }
+
+        function genererRapport() {
+            const joueur = document.getElementById('joueur_nom').value;
+            const evenement = document.getElementById('nom_evenement').value;
+            const dateDeb = document.getElementById('date_debut').value;
+            const dateFi = document.getElementById('date_fin').value;
+            const email = document.getElementById('parent_email').value;
+
+            if(!joueur || !evenement || !dateDeb || !dateFi || !email) { 
+                alert("⚠️ Erreur : Veuillez remplir le nom du joueur, de l'événement, les deux dates et l'adresse e-mail."); 
+                return; 
+            }
+
+            const periodeTexte = (dateDeb === dateFi) ? `le ${formaterDate(dateDeb)}` : `du ${formaterDate(dateDeb)} au ${formaterDate(dateFi)}`;
+
+            // Calcul des moyennes par Palette
+            const m_tech = (parseInt(document.getElementById('t_ctrl_orient').value) + parseInt(document.getElementById('t_prim_touch').value) + parseInt(document.getElementById('t_conduite').value) + parseInt(document.getElementById('t_pass_court').value) + parseInt(document.getElementById('t_pass_long').value) + parseInt(document.getElementById('t_une_touche').value) + parseInt(document.getElementById('t_transv').value) + parseInt(document.getElementById('t_elim').value) + parseInt(document.getElementById('t_feintes').value) + parseInt(document.getElementById('t_rythme').value) + parseInt(document.getElementById('t_tirs').value) + parseInt(document.getElementById('t_finition').value) + parseInt(document.getElementById('t_volees').value) + parseInt(document.getElementById('t_tete').value) + parseInt(document.getElementById('t_tacles').value) + parseInt(document.getElementById('t_intercept').value) + parseInt(document.getElementById('t_relances').value)) / 17;
+            const m_phys = (parseInt(document.getElementById('p_accel').value) + parseInt(document.getElementById('p_sprint').value) + parseInt(document.getElementById('p_vit_bal').value) + parseInt(document.getElementById('p_endurance').value) + parseInt(document.getElementById('p_explo').value) + parseInt(document.getElementById('p_detente').value) + parseInt(document.getElementById('p_duels').value) + parseInt(document.getElementById('p_coordon').value)) / 8;
+            const m_tact = (parseInt(document.getElementById('tac_place').value) + parseInt(document.getElementById('tac_lecture').value) + parseInt(document.getElementById('tac_collectif').value) + parseInt(document.getElementById('tac_systeme').value)) / 4;
+            const m_ment = (parseInt(document.getElementById('men_concen').value) + parseInt(document.getElementById('men_confiance').value) + parseInt(document.getElementById('men_pression').value) + parseInt(document.getElementById('men_discipline').value)) / 4;
+            const m_rel = (parseInt(document.getElementById('rel_commun').value) + parseInt(document.getElementById('rel_leader').value) + parseInt(document.getElementById('rel_auto').value)) / 3;
+
+            // Masquage formulaire, affichage bilan
+            document.getElementById('app-form').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('result_title').innerText = `📈 Bilan : ${joueur}`;
+            document.getElementById('result_meta').innerText = `${evenement} • Évalué ${periodeTexte} • Rapport envoyé à : ${email}`;
+
+            // Génération du graphique en radar
+            const ctx = document.getElementById('chartRadar').getContext('2d');
+            if(monGraphique) { monGraphique.destroy(); }
+            
+            monGraphique = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Technique', 'Physique', 'Tactique', 'Mental', 'Relationnel'],
+                    datasets: [{
+                        label: 'Moyenne Générale / 5',
+                        data: [m_tech.toFixed(1), m_phys.toFixed(1), m_tact.toFixed(1), m_ment.toFixed(1), m_rel.toFixed(1)],
+                        backgroundColor: 'rgba(23, 185, 120, 0.2)',
+                        borderColor: 'rgba(23, 185, 120, 1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#1e3d59'
+                    }]
+                },
+                options: {
+                    scales: { r: { min: 0, max: 5, ticks: { stepSize: 1, font: { size: 12 } } } }
+                }
+            });
+
+            // Algorithme de commentaires automatiques
+            let commentaire = `Bonjour, voici le débriefing d'évaluation suite à l'événement "${evenement}" pour ${joueur}.\n\n`;
+            
+            if (m_tech >= 4) commentaire += "⭐ **Secteur Majeur :** Excellente maîtrise technique générale. Le premier toucher de balle et la précision dans les passes permettent de dynamiser le collectif.\n";
+            else if (m_tech < 2.5) commentaire += "⚠️ **Axe d'amélioration :** La palette technique globale doit être stabilisée. Des séances axées sur la répétition des contrôles orientés et la justesse à une touche permettront de gagner en fluidité.\n";
+
+            if (m_phys >= 4) commentaire += "🏃 **Impact Physique :** Gros volume de jeu. La capacité à répéter les efforts de haute intensité et l'impact dans les duels ont été précieux aujourd'hui.\n";
+            else if (m_phys < 2.5) commentaire += "📉 **Axe Physique :** Une baisse d'intensité ou de fraîcheur a été constatée. Travailler sur l'endurance et le gainage aux entraînements sera primordial pour tenir la distance.\n";
+
+            if (m_tact >= 3.5 && m_ment >= 3.5) commentaire += "🧠 **Intelligence du jeu :** Très bonne lecture tactique, couplée à une concentration sans faille. Le joueur fait preuve de sérénité sous pression et respecte scrupuleusement les consignes de replacement.\n";
+            else commentaire += "⚙️ **Tactique/Mental :** Des progrès restent envisageables sur le placement sans ballon et l'anticipation des trajectoires pour fluidifier les transitions.\n";
+
+            document.getElementById('commentaire-texte').innerHTML = commentaire.replace(/\n/g, '<br>');
+
+            // Partie envoi automatique par e-mail
+            const sujetEmail = encodeURIComponent(`Bilan Football - ${joueur} (${evenement})`);
+            const corpsEmail = encodeURIComponent(`Bonjour,\n\nVoici les moyennes d'évaluation générées pour ${joueur} lors de l'événement : ${evenement} (${periodeTexte}) :\n\n- Palette Technique : ${m_tech.toFixed(1)}/5\n- Palette Physique : ${m_phys.toFixed(1)}/5\n- Palette Tactique : ${m_tact.toFixed(1)}/5\n- Palette Mentale : ${m_ment.toFixed(1)}/5\n- Palette Relationnelle : ${m_rel.toFixed(1)}/5\n\nCommentaires de synthèse :\n${commentaire.replace(/\*\*/g, '')}`);
+            
+            setTimeout(() => {
+                window.location.href = `mailto:${email}?subject=${sujetEmail}&body=${corpsEmail}`;
+            }, 2000);
+        }
+
+        function revenirSaisie() {
+            document.getElementById('app-form').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
