@@ -20,6 +20,7 @@
         select, input { padding: 8px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-size: 14px; color: #333; }
         input[type="text"], input[type="email"], input[type="date"] { width: 95%; display: block; margin-top: 5px; padding: 10px; box-sizing: border-box; }
         select { width: 85px; font-weight: bold; text-align: center; }
+        .full-select { width: 95%; text-align: left; margin-top: 5px; font-weight: normal; }
         button { width: 100%; padding: 15px; background: #17b978; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 6px rgba(23,185,120,0.2); }
         button:hover { background: #139a63; }
         #results { display: none; }
@@ -35,11 +36,18 @@
 
         <h2>👤 Informations Générales</h2>
         <div style="margin-bottom: 15px;">
-            <label>Nom du joueur évalé :</label>
-            <input type="text" id="joueur_nom" placeholder="Ex: Lucas Lucas" required>
+            <label>Nom du joueur évalué :</label>
+            <input type="text" id="joueur_nom" placeholder="Ex: Lucas" required>
         </div>
         <div style="margin-bottom: 15px;">
-            <label>Date du match :</label>
+            <label>Type d'événement :</label>
+            <select id="type_evenement" class="full-select">
+                <option value="Match">Match</option>
+                <option value="Tournoi">Tournoi</option>
+            </select>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label>Date de l'événement :</label>
             <input type="date" id="match_date" required>
         </div>
         <div style="margin-bottom: 15px;">
@@ -105,7 +113,7 @@
         <div class="form-group"><label>Adaptation aux différents systèmes de jeu</label><select id="tac_systeme"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
 
         <div class="section-title">PALETTE MENTALE</div>
-        <div class="form-group"><label>Concentration et lucidité</label><select id="men_concept"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Concentration et lucidité</label><select id="men_concen"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
         <div class="form-group"><label>Confiance en soi et prise d'initiative</label><select id="men_confiance"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
         <div class="form-group"><label>Gestion émotionnelle et résistance à la pression</label><select id="men_pression"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
         <div class="form-group"><label>Mental compétiteur et discipline</label><select id="men_discipline"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
@@ -119,8 +127,8 @@
 
         <div class="section-title">SPÉCIFIQUE SELON LE POSTE (Optionnel)</div>
         <div style="margin-bottom: 10px;">
-            <label style="font-weight: bold; font-size: 12px;">Sélectionner le poste évalue :</label>
-            <select id="poste_type" onchange="changerPoste()" style="width: 100%; text-align: left; margin-top: 5px;">
+            <label style="font-weight: bold; font-size: 12px;">Sélectionner le poste évalué :</label>
+            <select id="poste_type" onchange="changerPoste()" class="full-select">
                 <option value="aucun">Aucun / Non renseigné</option>
                 <option value="attaquant">Attaquant (Appels, Finition, Jeu dos au but)</option>
                 <option value="milieu">Milieu (Vision, Orientation, Volume de course)</option>
@@ -137,14 +145,14 @@
     </div>
 
     <div id="results" class="card">
-        <h1 id="result_title">📈 Bilan de Match</h1>
+        <h1 id="result_title">📈 Bilan</h1>
         <div class="subtitle" id="result_meta"></div>
         
         <div style="max-width: 100%; margin: auto;">
             <canvas id="chartRadar"></canvas>
         </div>
         
-        <h2>✍️ Commentaire Analytique du Coach</h2>
+        <h2>✍ Tangible : Commentaire Analytique</h2>
         <div id="commentaire-texte" class="commentary"></div>
         
         <button onclick="revenirSaisie()" style="background:#1e3d59; margin-top:20px;">Faire une nouvelle saisie</button>
@@ -169,6 +177,7 @@
 
         function genererRapport() {
             const joueur = document.getElementById('joueur_nom').value;
+            const typeEvenement = document.getElementById('type_evenement').value;
             const dateMatch = document.getElementById('match_date').value;
             const email = document.getElementById('parent_email').value;
 
@@ -177,17 +186,68 @@
                 return; 
             }
 
-            // Calcul des moyennes par Palette pour le graphique global
+            // Calcul des moyennes par Palette
             const m_tech = (parseInt(document.getElementById('t_ctrl_orient').value) + parseInt(document.getElementById('t_prim_touch').value) + parseInt(document.getElementById('t_conduite').value) + parseInt(document.getElementById('t_pass_court').value) + parseInt(document.getElementById('t_pass_long').value) + parseInt(document.getElementById('t_une_touche').value) + parseInt(document.getElementById('t_transv').value) + parseInt(document.getElementById('t_elim').value) + parseInt(document.getElementById('t_feintes').value) + parseInt(document.getElementById('t_rythme').value) + parseInt(document.getElementById('t_tirs').value) + parseInt(document.getElementById('t_finition').value) + parseInt(document.getElementById('t_volees').value) + parseInt(document.getElementById('t_tete').value) + parseInt(document.getElementById('t_tacles').value) + parseInt(document.getElementById('t_intercept').value) + parseInt(document.getElementById('t_relances').value)) / 17;
             const m_phys = (parseInt(document.getElementById('p_accel').value) + parseInt(document.getElementById('p_sprint').value) + parseInt(document.getElementById('p_vit_bal').value) + parseInt(document.getElementById('p_endurance').value) + parseInt(document.getElementById('p_explo').value) + parseInt(document.getElementById('p_detente').value) + parseInt(document.getElementById('p_duels').value) + parseInt(document.getElementById('p_coordon').value)) / 8;
             const m_tact = (parseInt(document.getElementById('tac_place').value) + parseInt(document.getElementById('tac_lecture').value) + parseInt(document.getElementById('tac_collectif').value) + parseInt(document.getElementById('tac_systeme').value)) / 4;
-            const m_ment = (parseInt(document.getElementById('men_concept').value) + parseInt(document.getElementById('men_confiance').value) + parseInt(document.getElementById('men_pression').value) + parseInt(document.getElementById('men_discipline').value)) / 4;
+            const m_ment = (parseInt(document.getElementById('men_concen').value) + parseInt(document.getElementById('men_confiance').value) + parseInt(document.getElementById('men_pression').value) + parseInt(document.getElementById('men_discipline').value)) / 4;
             const m_rel = (parseInt(document.getElementById('rel_commun').value) + parseInt(document.getElementById('rel_leader').value) + parseInt(document.getElementById('rel_auto').value)) / 3;
 
             // Masquage formulaire, affichage bilan
             document.getElementById('app-form').style.display = 'none';
             document.getElementById('results').style.display = 'block';
             document.getElementById('result_title').innerText = `📈 Bilan : ${joueur}`;
-            document.getElementById('result_meta').innerText = `Match évalué le ${dateMatch} • Rapport transmis à : ${email}`;
+            document.getElementById('result_meta').innerText = `${typeEvenement} évalué le ${dateMatch} • Rapport transmis à : ${email}`;
 
             // Génération du graphique en radar
+            const ctx = document.getElementById('chartRadar').getContext('2d');
+            if(monGraphique) { monGraphique.destroy(); }
+            
+            monGraphique = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Technique', 'Physique', 'Tactique', 'Mental', 'Relationnel'],
+                    datasets: [{
+                        label: 'Moyenne Générale / 5',
+                        data: [m_tech.toFixed(1), m_phys.toFixed(1), m_tact.toFixed(1), m_ment.toFixed(1), m_rel.toFixed(1)],
+                        backgroundColor: 'rgba(23, 185, 120, 0.2)',
+                        borderColor: 'rgba(23, 185, 120, 1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#1e3d59'
+                    }]
+                },
+                options: {
+                    scales: { r: { min: 0, max: 5, ticks: { stepSize: 1, font: { size: 12 } } } }
+                }
+            });
+
+            // Algorithme de commentaires automatiques
+            let commentaire = `Bonjour, voici le débriefing d'évaluation suite au ${typeEvenement.toLowerCase()} de ${joueur}.\n\n`;
+            
+            if (m_tech >= 4) commentaire += "⭐ **Secteur Majeur :** Excellente maîtrise technique générale. Le premier toucher de balle et la précision dans les passes permettent de dynamiser le collectif.\n";
+            else if (m_tech < 2.5) crystalline += "⚠️ **Axe d'amélioration :** La palette technique globale doit être stabilisée. Des séances axées sur la répétition des contrôles orientés et la justesse à une touche permettront de gagner en fluidité.\n";
+
+            if (m_phys >= 4) commentaire += "🏃 **Impact Physique :** Gros volume de jeu. La capacité à répéter les efforts de haute intensité et l'impact dans les duels ont été précieux aujourd'hui.\n";
+            else if (m_phys < 2.5) commentaire += "📉 **Axe Physique :** Une baisse d'intensité ou de fraîcheur a été constatée. Travailler sur l'endurance et le gainage aux entraînements sera primordial pour tenir la distance.\n";
+
+            if (m_tact >= 3.5 && m_ment >= 3.5) commentaire += "🧠 **Intelligence du jeu :** Très bonne lecture tactique, couplée à une concentration sans faille. Le joueur fait preuve de sérénité sous pression et respecte scrupuleusement les consignes de replacement.\n";
+            else commentaire += "⚙️ **Tactique/Mental :** Des progrès restent envisageables sur le placement sans ballon et l'anticipation des trajectoires pour fluidifier les transitions.\n";
+
+            document.getElementById('commentaire-texte').innerHTML = commentaire.replace(/\n/g, '<br>');
+
+            // Partie envoi automatique par e-mail
+            const sujetEmail = encodeURIComponent(`Bilan de ${typeEvenement} Football - ${joueur} (${dateMatch})`);
+            const corpsEmail = encodeURIComponent(`Bonjour,\n\nVoici les moyennes d'évaluation générées pour ${joueur} sur ce ${typeEvenement.toLowerCase()} :\n\n- Palette Technique : ${m_tech.toFixed(1)}/5\n- Palette Physique : ${m_phys.toFixed(1)}/5\n- Palette Tactique : ${m_tact.toFixed(1)}/5\n- Palette Mentale : ${m_ment.toFixed(1)}/5\n- Palette Relationnelle : ${m_rel.toFixed(1)}/5\n\nCommentaires de synthèse :\n${commentaire.replace(/\*\*/g, '')}`);
+            
+            setTimeout(() => {
+                window.location.href = `mailto:${email}?subject=${sujetEmail}&body=${corpsEmail}`;
+            }, 2000);
+        }
+
+        function revenirSaisie() {
+            document.getElementById('app-form').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
