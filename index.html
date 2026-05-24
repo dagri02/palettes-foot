@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palettes Football Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
+        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h1, h2 { color: #1e3d59; margin-top: 0; }
+        .palette-title { font-weight: bold; color: #17b978; margin-top: 15px; border-bottom: 2px solid #17b978; padding-bottom: 5px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; }
+        select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-size: 16px; }
+        button { width: 100%; padding: 15px; background: #17b978; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #139a63; }
+        #results { display: none; }
+        .commentary { background: #e8f4f8; padding: 15px; border-left: 5px solid #1e3d59; border-radius: 4px; margin-top: 15px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div id="app-form" class="card">
+        <h1>📊 Évaluation Match</h1>
+        <div class="form-group">
+            <label>Adresse E-mail de réception :</label>
+            <input type="email" id="email" style="width:95%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="coach@club.com" required>
+        </div>
+
+        <div class="palette-title">⚽ PALETTE TECHNIQUE</div>
+        <div class="form-group">
+            <label>Contrôle orienté</label>
+            <select id="tech_ctrl"><option value="1">🔴 À travailler</option><option value="2">🟢 Maîtrisé</option><option value="3">⭐ Point fort</option></select>
+        </div>
+        <div class="form-group">
+            <label>Passes courtes</label>
+            <select id="tech_pass"><option value="1">🔴 À travailler</option><option value="2">🟢 Maîtrisé</option><option value="3">⭐ Point fort</option></select>
+        </div>
+
+        <div class="palette-title">🏃 PALETTE PHYSIQUE</div>
+        <div class="form-group">
+            <label>Accélération & Vitesse</label>
+            <select id="phys_vit"><option value="1">🔴 À travailler</option><option value="2">🟢 Maîtrisé</option><option value="3">⭐ Point fort</option></select>
+        </div>
+        <div class="form-group">
+            <label>Endurance (Efforts)</label>
+            <select id="phys_end"><option value="1">🔴 À travailler</option><option value="2">🟢 Maîtrisé</option><option value="3">⭐ Point fort</option></select>
+        </div>
+
+        <div class="palette-title">🧠 PALETTE TACTIQUE & MENTALE</div>
+        <div class="form-group">
+            <label>Placement / Espace</label>
+            <select id="tac_plac"><option value="1">🔴 À travailler</option><option value="2">🟢 Maîtrisé</option><option value="3">⭐ Point fort</option></select>
+        </div>
+
+        <button onclick="genererRapport()">VALIDER ET ENVOYER</button>
+    </div>
+
+    <div id="results" class="card">
+        <h2>📈 Analyse Visuelle du Match</h2>
+        <canvas id="chartRadar" width="400" height="400"></canvas>
+        
+        <h2>✍️ Commentaires Automatiques</h2>
+        <div id="commentaire-texte" class="commentary"></div>
+        
+        <button onclick="revenirSaisie()" style="background:#1e3d59; margin-top:20px;">NOUVELLE SAISIE</button>
+    </div>
+
+    <script>
+        let monGraphique;
+
+        function genererRapport() {
+            // 1. Récupération des notes
+            const t_ctrl = parseInt(document.getElementById('tech_ctrl').value);
+            const t_pass = parseInt(document.getElementById('tech_pass').value);
+            const p_vit = parseInt(document.getElementById('phys_vit').value);
+            const p_end = parseInt(document.getElementById('phys_end').value);
+            const tac_p = parseInt(document.getElementById('tac_plac').value);
+            const email = document.getElementById('email').value;
+
+            if(!email) { alert("Veuillez entrer un e-mail"); return; }
+
+            // 2. Basculer d'écran
+            document.getElementById('app-form').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+
+            // 3. Génération du Graphique en Radar (Idéal pour le foot)
+            const ctx = document.getElementById('chartRadar').getContext('2d');
+            if(monGraphique) { monGraphique.destroy(); }
+            
+            monGraphique = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Contrôle', 'Passes', 'Vitesse', 'Endurance', 'Placement'],
+                    datasets: [{
+                        label: 'Performances Match',
+                        data: [t_ctrl, t_pass, p_vit, p_end, tac_p],
+                        backgroundColor: 'rgba(23, 185, 120, 0.2)',
+                        borderColor: 'rgba(23, 185, 120, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: { scales: { r: { min: 0, max: 3, ticks: { stepSize: 1 } } } }
+            });
+
+            // 4. Génération de commentaires intelligents selon les notes
+            let commentaire = "Analyse globale : ";
+            if (t_ctrl === 3 && t_pass === 3) {
+                commentaire += "Excellente prestation technique. Le joueur a fluidifié le jeu par la justesse de ses contrôles et de ses transmissions. ";
+            } else if (t_ctrl === 1 || t_pass === 1) {
+                commentaire += "Des déchets techniques ont ralenti les transitions offensives. Un focus sur le premier toucher est recommandé. ";
+            }
+            if (p_end === 1) {
+                commentaire += "Baisse de rythme visible en seconde période. L'endurance est un axe de travail prioritaire.";
+            } else {
+                commentaire += "Volume physique solide, les efforts ont été répétés jusqu'au coup de sifflet final.";
+            }
+
+            document.getElementById('commentaire-texte').innerText = commentaire;
+
+            // 5. Simulation d'envoi de notification/Email
+            console.log(`Rapport envoyé à : ${email}`);
+            // Ici s'intègre le script d'envoi automatique (Étape 3)
+        }
+
+        function revenirSaisie() {
+            document.getElementById('app-form').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
