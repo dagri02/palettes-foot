@@ -3,131 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palettes Football Pro</title>
+    <title>Palettes Football - Suivi Match</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Palettes%20Foot%22,%22short_name%22:%22FootPalettes%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#1e3d59%22,%22theme_color%22:%22#1e3d59%22}">
+    
     <style>
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
-        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        h1, h2 { color: #1e3d59; margin-top: 0; }
-        .palette-title { font-weight: bold; color: #17b978; margin-top: 15px; border-bottom: 2px solid #17b978; padding-bottom: 5px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 500; }
-        select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-size: 16px; }
-        button { width: 100%; padding: 15px; background: #17b978; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 12px; color: #333; }
+        .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+        h1 { color: #1e3d59; font-size: 24px; text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
+        h2 { color: #1e3d59; font-size: 18px; border-bottom: 2px solid #1e3d59; padding-bottom: 5px; margin-top: 25px; }
+        .section-title { font-weight: bold; color: #17b978; margin-top: 15px; font-size: 14px; background: #e8f8f2; padding: 6px 10px; border-radius: 6px; }
+        .form-group { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; padding: 8px; border-radius: 6px; border: 1px solid #eee; }
+        label { font-size: 13px; font-weight: 500; max-width: 70%; line-height: 1.3; }
+        select, input { padding: 8px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-size: 14px; color: #333; }
+        input[type="text"], input[type="email"], input[type="date"] { width: 95%; display: block; margin-top: 5px; padding: 10px; box-sizing: border-box; }
+        select { width: 85px; font-weight: bold; text-align: center; }
+        button { width: 100%; padding: 15px; background: #17b978; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 6px rgba(23,185,120,0.2); }
         button:hover { background: #139a63; }
         #results { display: none; }
-        .commentary { background: #e8f4f8; padding: 15px; border-left: 5px solid #1e3d59; border-radius: 4px; margin-top: 15px; font-style: italic; }
+        .commentary { background: #e8f4f8; padding: 15px; border-left: 5px solid #1e3d59; border-radius: 4px; margin-top: 15px; font-size: 14px; line-height: 1.5; }
+        .score-info { font-size: 11px; color: #666; text-align: center; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
     <div id="app-form" class="card">
-        <h1>📊 Évaluation Match</h1>
-        <div class="form-group">
-            <label>Adresse E-mail de réception :</label>
-            <input type="email" id="email" style="width:95%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="coach@club.com" required>
+        <h1>📊 Suivi Palette Joueur</h1>
+        <div class="subtitle">Évaluation des compétences de football en temps réel</div>
+
+        <h2>👤 Informations Générales</h2>
+        <div style="margin-bottom: 15px;">
+            <label>Nom du joueur évalé :</label>
+            <input type="text" id="joueur_nom" placeholder="Ex: Lucas Lucas" required>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label>Date du match :</label>
+            <input type="date" id="match_date" required>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label>Adresse E-mail du parent (pour envoi du rapport) :</label>
+            <input type="email" id="parent_email" placeholder="parent@exemple.com" required>
         </div>
 
-        <div class="palette-title">⚽ PALETTE TECHNIQUE</div>
-        <div class="form-group">
-            <label>Contrôle orienté</label>
-            <select id="tech_ctrl"><option value="1">🔴 À travailler</option><option value="2">🟢 Maîtrisé</option><option value="3">⭐ Point fort</option></select>
+        <p class="score-info">Attribuez une note de 0 (À travailler d'urgence) à 5 (Niveau exceptionnel)</p>
+
+        <h2>⚽ 1. La Palette Technique</h2>
+        
+        <div class="section-title">CONTRÔLE ET MAÎTRISE DU BALLON</div>
+        <div class="form-group"><label>Contrôle orienté</label><select id="t_ctrl_orient"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Premier toucher</label><select id="t_prim_touch"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Conduite de balle</label><select id="t_conduite"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+
+        <div class="section-title">PASSES</div>
+        <div class="form-group"><label>Passes courtes</label><select id="t_pass_court"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Passes longues</label><select id="t_pass_long"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Jeu en une touche</label><select id="t_une_touche"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Transversales</label><select id="t_transv"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+
+        <div class="section-title">DRIBBLE</div>
+        <div class="form-group"><label>Élimination</label><select id="t_elim"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Feintes</label><select id="t_feintes"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Changements de rythme</label><select id="t_rythme"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+
+        <div class="section-title">FRAPPE</div>
+        <div class="form-group"><label>Tirs</label><select id="t_tirs"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Finition</label><select id="t_finition"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Volées</label><select id="t_volees"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Jeu de tête</label><select id="t_tete"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+
+        <div class="section-title">JEU DÉFENSIF</div>
+        <div class="form-group"><label>Tacles</label><select id="t_tacles"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Interceptions</label><select id="t_intercept"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Relances</label><select id="t_relances"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+
+        <h2>🏃 2. La Palette Physique</h2>
+        
+        <div class="section-title">VITESSE</div>
+        <div class="form-group"><label>Accélération</label><select id="p_accel"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Sprint</label><select id="p_sprint"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Vitesse avec ballon</label><select id="p_vit_bal"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+
+        <div class="section-title">ENDURANCE</div>
+        <div class="form-group"><label>Capacité à répéter les efforts</label><select id="p_endurance"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+
+        <div class="section-title">PUISSANCE</div>
+        <div class="form-group"><label>Explosivité</label><select id="p_explo"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Détente</label><select id="p_detente"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Impact dans les duels</label><select id="p_duels"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+
+        <div class="section-title">COORDINATION</div>
+        <div class="form-group"><label>Équilibre, agilité, gainage</label><select id="p_coordon"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+
+        <h2>🧠 3. Les Palettes Tactique & Mentale</h2>
+        
+        <div class="section-title">PALETTE TACTIQUE</div>
+        <div class="form-group"><label>Placement et occupation des espaces</label><select id="tac_place"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Lecture du jeu et anticipation</label><select id="tac_lecture"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Compréhension collective (pressing, couvertures, compensations)</label><select id="tac_collectif"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Adaptation aux différents systèmes de jeu</label><select id="tac_systeme"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+
+        <div class="section-title">PALETTE MENTALE</div>
+        <div class="form-group"><label>Concentration et lucidité</label><select id="men_concept"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Confiance en soi et prise d'initiative</label><select id="men_confiance"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Gestion émotionnelle et résistance à la pression</label><select id="men_pression"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Mental compétiteur et discipline</label><select id="men_discipline"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+
+        <h2>👥 4. Palette Relationnelle & Spécifique</h2>
+        
+        <div class="section-title">PALETTE RELATIONNELLE ET COLLECTIVE</div>
+        <div class="form-group"><label>Communication avec les partenaires</label><select id="rel_commun"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Leadership et exemplarité</label><select id="rel_leader"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="form-group"><label>Création d'automatismes collectifs</label><select id="rel_auto"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+
+        <div class="section-title">SPÉCIFIQUE SELON LE POSTE (Optionnel)</div>
+        <div style="margin-bottom: 10px;">
+            <label style="font-weight: bold; font-size: 12px;">Sélectionner le poste évalue :</label>
+            <select id="poste_type" onchange="changerPoste()" style="width: 100%; text-align: left; margin-top: 5px;">
+                <option value="aucun">Aucun / Non renseigné</option>
+                <option value="attaquant">Attaquant (Appels, Finition, Jeu dos au but)</option>
+                <option value="milieu">Milieu (Vision, Orientation, Volume de course)</option>
+                <option value="defenseur">Défenseur (Duel, Anticipation, Relance)</option>
+                <option value="gardien">Gardien (Réflexes, Placement, Jeu au pied)</option>
+            </select>
         </div>
-        <div class="form-group">
-            <label>Passes courtes</label>
-            <select id="tech_pass"><option value="1">🔴 À travailler</option><option value="2">🟢 Maîtrisé</option><option value="3">⭐ Point fort</option></select>
+        <div id="poste_note_div" class="form-group" style="display:none;">
+            <label id="poste_label">Note spécifique au poste :</label>
+            <select id="poste_note"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select>
         </div>
 
-        <div class="palette-title">🏃 PALETTE PHYSIQUE</div>
-        <div class="form-group">
-            <label>Accélération & Vitesse</label>
-            <select id="phys_vit"><option value="1">🔴 À travailler</option><option value="2">🟢 Maîtrisé</option><option value="3">⭐ Point fort</option></select>
-        </div>
-        <div class="form-group">
-            <label>Endurance (Efforts)</label>
-            <select id="phys_end"><option value="1">🔴 À travailler</option><option value="2">🟢 Maîtrisé</option><option value="3">⭐ Point fort</option></select>
-        </div>
-
-        <div class="palette-title">🧠 PALETTE TACTIQUE & MENTALE</div>
-        <div class="form-group">
-            <label>Placement / Espace</label>
-            <select id="tac_plac"><option value="1">🔴 À travailler</option><option value="2">🟢 Maîtrisé</option><option value="3">⭐ Point fort</option></select>
-        </div>
-
-        <button onclick="genererRapport()">VALIDER ET ENVOYER</button>
+        <button onclick="genererRapport()">🎯 ENVOYER & ANALYSER</button>
     </div>
 
     <div id="results" class="card">
-        <h2>📈 Analyse Visuelle du Match</h2>
-        <canvas id="chartRadar" width="400" height="400"></canvas>
+        <h1 id="result_title">📈 Bilan de Match</h1>
+        <div class="subtitle" id="result_meta"></div>
         
-        <h2>✍️ Commentaires Automatiques</h2>
+        <div style="max-width: 100%; margin: auto;">
+            <canvas id="chartRadar"></canvas>
+        </div>
+        
+        <h2>✍️ Commentaire Analytique du Coach</h2>
         <div id="commentaire-texte" class="commentary"></div>
         
-        <button onclick="revenirSaisie()" style="background:#1e3d59; margin-top:20px;">NOUVELLE SAISIE</button>
+        <button onclick="revenirSaisie()" style="background:#1e3d59; margin-top:20px;">Faire une nouvelle saisie</button>
     </div>
 
     <script>
         let monGraphique;
 
+        function changerPoste() {
+            const p = document.getElementById('poste_type').value;
+            const div = document.getElementById('poste_note_div');
+            const lbl = document.getElementById('poste_label');
+            if(p === 'aucun') { div.style.display = 'none'; } 
+            else {
+                div.style.display = 'flex';
+                if(p==='attaquant') lbl.innerText = "Attaquant (Appels, finition, jeu dos au but)";
+                if(p==='milieu') lbl.innerText = "Milieu (Vision, orientation du jeu, volume de course)";
+                if(p==='defenseur') lbl.innerText = "Défenseur (Duel, anticipation, relance)";
+                if(p==='gardien') lbl.innerText = "Gardien (Réflexes, placement, jeu au pied)";
+            }
+        }
+
         function genererRapport() {
-            // 1. Récupération des notes
-            const t_ctrl = parseInt(document.getElementById('tech_ctrl').value);
-            const t_pass = parseInt(document.getElementById('tech_pass').value);
-            const p_vit = parseInt(document.getElementById('phys_vit').value);
-            const p_end = parseInt(document.getElementById('phys_end').value);
-            const tac_p = parseInt(document.getElementById('tac_plac').value);
-            const email = document.getElementById('email').value;
+            const joueur = document.getElementById('joueur_nom').value;
+            const dateMatch = document.getElementById('match_date').value;
+            const email = document.getElementById('parent_email').value;
 
-            if(!email) { alert("Veuillez entrer un e-mail"); return; }
+            if(!joueur || !dateMatch || !email) { 
+                alert("⚠️ Erreur : Veuillez remplir le nom, la date et l'adresse e-mail de réception."); 
+                return; 
+            }
 
-            // 2. Basculer d'écran
+            // Calcul des moyennes par Palette pour le graphique global
+            const m_tech = (parseInt(document.getElementById('t_ctrl_orient').value) + parseInt(document.getElementById('t_prim_touch').value) + parseInt(document.getElementById('t_conduite').value) + parseInt(document.getElementById('t_pass_court').value) + parseInt(document.getElementById('t_pass_long').value) + parseInt(document.getElementById('t_une_touche').value) + parseInt(document.getElementById('t_transv').value) + parseInt(document.getElementById('t_elim').value) + parseInt(document.getElementById('t_feintes').value) + parseInt(document.getElementById('t_rythme').value) + parseInt(document.getElementById('t_tirs').value) + parseInt(document.getElementById('t_finition').value) + parseInt(document.getElementById('t_volees').value) + parseInt(document.getElementById('t_tete').value) + parseInt(document.getElementById('t_tacles').value) + parseInt(document.getElementById('t_intercept').value) + parseInt(document.getElementById('t_relances').value)) / 17;
+            const m_phys = (parseInt(document.getElementById('p_accel').value) + parseInt(document.getElementById('p_sprint').value) + parseInt(document.getElementById('p_vit_bal').value) + parseInt(document.getElementById('p_endurance').value) + parseInt(document.getElementById('p_explo').value) + parseInt(document.getElementById('p_detente').value) + parseInt(document.getElementById('p_duels').value) + parseInt(document.getElementById('p_coordon').value)) / 8;
+            const m_tact = (parseInt(document.getElementById('tac_place').value) + parseInt(document.getElementById('tac_lecture').value) + parseInt(document.getElementById('tac_collectif').value) + parseInt(document.getElementById('tac_systeme').value)) / 4;
+            const m_ment = (parseInt(document.getElementById('men_concept').value) + parseInt(document.getElementById('men_confiance').value) + parseInt(document.getElementById('men_pression').value) + parseInt(document.getElementById('men_discipline').value)) / 4;
+            const m_rel = (parseInt(document.getElementById('rel_commun').value) + parseInt(document.getElementById('rel_leader').value) + parseInt(document.getElementById('rel_auto').value)) / 3;
+
+            // Masquage formulaire, affichage bilan
             document.getElementById('app-form').style.display = 'none';
             document.getElementById('results').style.display = 'block';
+            document.getElementById('result_title').innerText = `📈 Bilan : ${joueur}`;
+            document.getElementById('result_meta').innerText = `Match évalué le ${dateMatch} • Rapport transmis à : ${email}`;
 
-            // 3. Génération du Graphique en Radar (Idéal pour le foot)
-            const ctx = document.getElementById('chartRadar').getContext('2d');
-            if(monGraphique) { monGraphique.destroy(); }
-            
-            monGraphique = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: ['Contrôle', 'Passes', 'Vitesse', 'Endurance', 'Placement'],
-                    datasets: [{
-                        label: 'Performances Match',
-                        data: [t_ctrl, t_pass, p_vit, p_end, tac_p],
-                        backgroundColor: 'rgba(23, 185, 120, 0.2)',
-                        borderColor: 'rgba(23, 185, 120, 1)',
-                        borderWidth: 2
-                    }]
-                },
-                options: { scales: { r: { min: 0, max: 3, ticks: { stepSize: 1 } } } }
-            });
-
-            // 4. Génération de commentaires intelligents selon les notes
-            let commentaire = "Analyse globale : ";
-            if (t_ctrl === 3 && t_pass === 3) {
-                commentaire += "Excellente prestation technique. Le joueur a fluidifié le jeu par la justesse de ses contrôles et de ses transmissions. ";
-            } else if (t_ctrl === 1 || t_pass === 1) {
-                commentaire += "Des déchets techniques ont ralenti les transitions offensives. Un focus sur le premier toucher est recommandé. ";
-            }
-            if (p_end === 1) {
-                commentaire += "Baisse de rythme visible en seconde période. L'endurance est un axe de travail prioritaire.";
-            } else {
-                commentaire += "Volume physique solide, les efforts ont été répétés jusqu'au coup de sifflet final.";
-            }
-
-            document.getElementById('commentaire-texte').innerText = commentaire;
-
-            // 5. Simulation d'envoi de notification/Email
-            console.log(`Rapport envoyé à : ${email}`);
-            // Ici s'intègre le script d'envoi automatique (Étape 3)
-        }
-
-        function revenirSaisie() {
-            document.getElementById('app-form').style.display = 'block';
-            document.getElementById('results').style.display = 'none';
-        }
-    </script>
-</body>
-</html>
+            // Génération du graphique en radar
